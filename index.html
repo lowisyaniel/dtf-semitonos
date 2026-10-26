@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DTF Semitonos</title>
+<meta name="theme-color" content="#1c1d20">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icono-192.png">
+<link rel="apple-touch-icon" href="icono-192.png">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<header class="barra">
+  <div class="marca">DTF <span>Semitonos</span></div>
+  <div id="archivo" class="archivo">Sin imagen</div>
+  <div id="estado" class="estado"></div>
+  <div id="motorIA" class="estado" title="Dónde corre la IA en esta computadora"></div>
+  <button id="instalar" hidden title="Instalarla como app de Chrome: ventana propia y funciona sin internet">Instalar app</button>
+</header>
+
+<main class="app">
+  <section class="zona-visor">
+    <div class="herramientas-visor">
+      <div class="grupo seg" id="vista">
+        <button data-v="imagen" class="activo" title="La imagen que estás preparando (V)">Original</button>
+        <button data-v="resultado" title="Cómo sale el archivo para imprimir (V)">Resultado</button>
+      </div>
+      <div class="grupo" id="fondos" title="Color de la camiseta en la vista">
+        <button data-f="cuadros" class="muestra cuadros activo" title="Transparencia (cuadritos)"></button>
+        <button data-f="#ffffff" class="muestra" style="--c:#ffffff" title="Blanca"></button>
+        <button data-f="#111111" class="muestra" style="--c:#111111" title="Negra"></button>
+        <button data-f="#8a8d91" class="muestra" style="--c:#8a8d91" title="Gris"></button>
+        <button data-f="#1d2a4a" class="muestra" style="--c:#1d2a4a" title="Azul marino"></button>
+        <button data-f="#8e1b22" class="muestra" style="--c:#8e1b22" title="Roja"></button>
+        <label class="muestra otro" title="Otro color"><input type="color" id="fondoOtro" value="#3a5a40"></label>
+      </div>
+      <div class="grupo">
+        <button id="zMenos" title="Alejar (-)">−</button>
+        <button id="zAjustar" title="Ajustar a la ventana (0)">Ajustar</button>
+        <button id="z100" title="Píxel real (1)">1:1</button>
+        <button id="zMas" title="Acercar (+)">+</button>
+        <span id="zoomTxt" class="dato">—</span>
+      </div>
+    </div>
+    <div id="visor" class="visor">
+      <canvas id="lienzo"></canvas>
+      <div id="soltar" class="soltar">
+        <div>
+          <strong>Arrastra una imagen aquí</strong>
+          <span>o usa “Abrir imagen” — PNG, JPG, WEBP</span>
+        </div>
+      </div>
+      <div id="calculando" class="calculando" hidden>Calculando…</div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <!-- 1 -->
+    <section class="bloque">
+      <h2><i>1</i> Imagen</h2>
+      <label class="boton principal ancho">Abrir imagen<input type="file" id="entrada" accept="image/*" hidden></label>
+      <p id="infoImagen" class="nota"></p>
+    </section>
+
+    <!-- 2 -->
+    <section class="bloque" data-necesita-imagen>
+      <h2><i>2</i> Mejorar calidad</h2>
+      <div class="fila">
+        <span class="etiqueta">Tipo de imagen</span>
+        <div class="seg" id="modeloIA">
+          <button data-v="ilustracion" class="activo" title="Logos, dibujos, ilustraciones, anime: bordes limpios">Dibujo / logo</button>
+          <button data-v="foto" title="Fotos y cosas reales">Foto</button>
+        </div>
+      </div>
+      <div class="fila botones3">
+        <button data-escala="2">×2</button>
+        <button data-escala="4">×4</button>
+        <button data-escala="medida" id="escalaMedida">A la medida</button>
+      </div>
+      <div id="progresoIA" class="progreso" hidden><div></div><span></span></div>
+      <p class="nota">Corre en esta computadora; la imagen no sale de aquí. La primera vez baja el modelo (entre 9 y 67 MB).</p>
+    </section>
+
+    <!-- 3 -->
+    <section class="bloque" data-necesita-imagen>
+      <h2><i>3</i> Fondo y pinceles</h2>
+      <div class="fila botones2">
+        <button id="fondoCalidad" title="BiRefNet: el mejor con pelo y bordes finos. La primera vez baja 490 MB; necesita GPU">Quitar fondo (IA)</button>
+        <button id="fondoRapido" title="ISNet: más rápido. La primera vez baja 179 MB">Rápido</button>
+      </div>
+      <div id="progresoFondo" class="progreso" hidden><div></div><span></span></div>
+
+      <div class="herr" id="herramientas">
+        <button data-h="mover" class="activo" title="Mover la vista (M o mantén Espacio)">✋<span>Mover</span></button>
+        <button data-h="borrar" title="Borrar a mano (B)">⌫<span>Borrar</span></button>
+        <button data-h="restaurar" title="Devolver lo borrado (R)">↺<span>Restaurar</span></button>
+        <button data-h="varita" title="Borrar un color con un clic (W)">✦<span>Borrar color</span></button>
+      </div>
+      <div class="fila control">
+        <label for="pincel">Tamaño del pincel <em id="pincelV"></em></label>
+        <input type="range" id="pincel" min="1" max="600" value="60">
+      </div>
+      <div class="fila control" id="filaTol">
+        <label for="tolerancia">Tolerancia del color <em id="toleranciaV"></em></label>
+        <input type="range" id="tolerancia" min="1" max="100" value="10">
+      </div>
+      <label class="check"><input type="checkbox" id="contiguo" checked> Solo la zona pegada donde hago clic</label>
+      <div class="fila botones2">
+        <button id="deshacer" title="Cmd+Z">Deshacer</button>
+        <button id="rehacer" title="Cmd+Shift+Z">Rehacer</button>
+      </div>
+      <p class="nota">Pinceles de borde duro: lo que borras queda 100 % transparente, sin bordes a medias.</p>
+    </section>
+
+    <!-- 4 -->
+    <section class="bloque" data-necesita-imagen>
+      <h2><i>4</i> Tamaño de impresión</h2>
+      <div class="fila tres">
+        <label>Ancho<input type="number" id="ancho" min="0.5" max="60" step="0.1" value="10"></label>
+        <label>Unidad
+          <select id="unidad"><option value="in">pulgadas</option><option value="cm">cm</option></select>
+        </label>
+        <label>DPI
+          <select id="dpi"><option>300</option><option>360</option><option>600</option></select>
+        </label>
+      </div>
+      <p id="infoImpresion" class="nota"></p>
+    </section>
+
+    <!-- 5 -->
+    <section class="bloque" data-necesita-imagen>
+      <h2><i>5</i> Semitono</h2>
+      <div class="chips" id="presets">
+        <button data-p="blanca">Camiseta blanca</button>
+        <button data-p="negra">Camiseta negra</button>
+        <button data-p="bn">B/N solo puntos</button>
+        <button data-p="bnNegra">B/N en camiseta negra</button>
+        <button data-p="alfa">Solo transparencias</button>
+      </div>
+
+      <div class="fila">
+        <span class="etiqueta">Qué se quita</span>
+        <div class="seg" id="modo">
+          <button data-v="blanca" class="activo" title="Camiseta blanca: se quitan los claros, se imprimen los oscuros">Los claros</button>
+          <button data-v="negra" title="Camiseta oscura: se quitan los oscuros, se imprimen los claros">Los oscuros</button>
+          <button data-v="alfa" title="No toca los colores: solo pasa a puntos las transparencias">Nada</button>
+        </div>
+      </div>
+
+      <span class="etiqueta">Tipo de semitono</span>
+      <div class="formas" id="formas"></div>
+
+      <div class="fila" id="filaEstilo">
+        <span class="etiqueta">Estilo del punto</span>
+        <div class="seg" id="estilo">
+          <button data-v="detalle" class="activo" title="El punto sigue los bordes de la imagen: más detalle">Detalle</button>
+          <button data-v="pop" title="Cada punto sale entero, redondito: look pop art / cómic">Pop art</button>
+        </div>
+      </div>
+
+      <div class="fila control">
+        <label for="trama">Tamaño de la trama <em id="tramaV"></em></label>
+        <input type="range" id="trama" min="0.3" max="4" step="0.01" value="0.73">
+      </div>
+      <div class="fila control">
+        <label for="tamPunto">Tamaño del punto <em id="tamPuntoV"></em></label>
+        <input type="range" id="tamPunto" min="-100" max="100" step="1" value="0">
+      </div>
+      <div class="fila control">
+        <label for="angulo">Ángulo <em id="anguloV"></em></label>
+        <input type="range" id="angulo" min="0" max="90" step="0.5" value="22.5">
+      </div>
+      <div class="fila control" id="filaCorte">
+        <label for="corte"><span id="corteT">Quitar claros desde</span> <em id="corteV"></em></label>
+        <input type="range" id="corte" min="0" max="255" step="1" value="235">
+      </div>
+      <div class="fila control" id="filaSolido">
+        <label for="solido"><span id="solidoT">Sólido desde</span> <em id="solidoV"></em></label>
+        <input type="range" id="solido" min="0" max="255" step="1" value="40">
+      </div>
+      <div class="fila control">
+        <label for="respiracion">Respiración (huequitos en lo sólido) <em id="respiracionV"></em></label>
+        <input type="range" id="respiracion" min="0" max="50" step="1" value="0">
+      </div>
+      <label class="check" id="filaInvertir"><input type="checkbox" id="invertir"> Invertir</label>
+
+      <details class="avanzado" open>
+        <summary>Limpieza para que no se despegue nada</summary>
+        <div class="fila control">
+          <label for="minPunto">Punto más pequeño permitido <em id="minPuntoV"></em></label>
+          <input type="range" id="minPunto" min="0" max="40" step="1" value="8">
+        </div>
+        <div class="fila control">
+          <label for="maxPunto">Se vuelve sólido desde <em id="maxPuntoV"></em></label>
+          <input type="range" id="maxPunto" min="55" max="100" step="1" value="92">
+        </div>
+        <div class="fila control">
+          <label for="limpieza">Quitar motas y tapar huequitos de menos de <em id="limpiezaV"></em></label>
+          <input type="range" id="limpieza" min="0" max="60" step="1" value="4">
+        </div>
+      </details>
+
+      <div class="fila">
+        <span class="etiqueta">Transparencias</span>
+        <div class="seg" id="alfaModo">
+          <button data-v="umbral" class="activo" title="Todo o nada: lo que pase el umbral se imprime entero">Umbral</button>
+          <button data-v="semitono" title="Los desvanecidos se vuelven puntos">Pasarlas a puntos</button>
+        </div>
+      </div>
+      <div class="fila control" id="filaUmbral">
+        <label for="alfaUmbral">Umbral de transparencia <em id="alfaUmbralV"></em></label>
+        <input type="range" id="alfaUmbral" min="1" max="255" step="1" value="128">
+      </div>
+
+      <div class="fila">
+        <span class="etiqueta">Color de la tinta</span>
+        <div class="seg" id="tinta">
+          <button data-v="original" class="activo">Colores originales</button>
+          <button data-v="solida">Un solo color</button>
+        </div>
+      </div>
+      <div class="fila" id="filaColor" hidden>
+        <input type="color" id="tintaColor" value="#000000">
+        <span class="nota">Color de todos los puntos</span>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="bloque" data-necesita-imagen>
+      <h2><i>6</i> Exportar</h2>
+      <label class="campo">Nombre del archivo<input type="text" id="nombre" value="diseño dtf"></label>
+      <label class="check"><input type="checkbox" id="recortar" checked> Recortar el espacio vacío alrededor</label>
+      <button id="exportar" class="boton principal ancho">Guardar PNG para DTF…</button>
+      <div id="reporte" class="reporte" hidden></div>
+    </section>
+  </aside>
+</main>
+
+<script type="module" src="app.js"></script>
+<script src="registro.js"></script>
+</body>
+</html>

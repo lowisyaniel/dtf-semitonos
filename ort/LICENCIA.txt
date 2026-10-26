@@ -1,0 +1,7 @@
+onnxruntime-web 1.31.1 — Copyright (c) Microsoft Corporation. Licencia MIT.
+https://github.com/microsoft/onnxruntime/blob/main/LICENSE
+
+Modelos en ../modelos:
+- Real-ESRGAN (xinntao) — BSD-3-Clause
+- BiRefNet (ZhengPeng7) — MIT
+- ISNet / DIS (xuebinqin) — Apache-2.0
