@@ -255,12 +255,33 @@ function procesar(src, p) {
   const salida = new Uint8ClampedArray(N * 4);
   const solida = p.tinta === 'solida';
   const [tr, tg, tb] = p.tintaColor;
+  // Saturación y contraste extra, ya con la trama hecha: entre punto y punto se
+  // ve la camiseta y los colores quedan apagados. Solo cambia el color de la
+  // tinta; los puntos y la transparencia quedan idénticos.
+  // - saturación: cada color se separa de su gris (misma luz).
+  // - contraste: cada canal se aleja del gris medio (negros más negros, blancos más blancos).
+  const sat = solida ? 0 : (p.saturacion || 0);
+  const con = solida ? 0 : (p.contraste || 0);
   let conTinta = 0;
   for (let i = 0, o = 0; i < N; i++, o += 4) {
     if (!tinta[i]) continue;
     conTinta++;
     if (solida) { salida[o] = tr; salida[o + 1] = tg; salida[o + 2] = tb; }
-    else { salida[o] = datos[o]; salida[o + 1] = datos[o + 1]; salida[o + 2] = datos[o + 2]; }
+    else if (sat || con) {
+      let r = datos[o], g = datos[o + 1], b = datos[o + 2];
+      if (sat) {
+        const gris = 0.299 * r + 0.587 * g + 0.114 * b;
+        r = gris + (r - gris) * (1 + sat);
+        g = gris + (g - gris) * (1 + sat);
+        b = gris + (b - gris) * (1 + sat);
+      }
+      if (con) {
+        r = 128 + (r - 128) * (1 + con);
+        g = 128 + (g - 128) * (1 + con);
+        b = 128 + (b - 128) * (1 + con);
+      }
+      salida[o] = r; salida[o + 1] = g; salida[o + 2] = b; // Uint8Clamped: recorta a 0–255
+    } else { salida[o] = datos[o]; salida[o + 1] = datos[o + 1]; salida[o + 2] = datos[o + 2]; }
     salida[o + 3] = 255;
   }
 

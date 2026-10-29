@@ -27,7 +27,7 @@ const S = {
   res: null,
   p: {
     modo: 'blanca', forma: 'redondo', estilo: 'detalle', trama: 0.73, tamPunto: 0, angulo: 22.5,
-    corte: 235, solido: 40, invertir: false, respiracion: 0, minPunto: 8, maxPunto: 92, limpieza: 4,
+    corte: 235, solido: 40, invertir: false, respiracion: 0, saturacion: 0, contraste: 0, minPunto: 8, maxPunto: 92, limpieza: 4,
     alfaModo: 'umbral', alfaUmbral: 128, tinta: 'original', tintaColor: '#000000',
   },
 };
@@ -77,6 +77,8 @@ function parametrosMotor() {
     minPunto: p.minPunto / 100,
     maxPunto: p.maxPunto / 100,
     respiracion: p.respiracion / 100,
+    saturacion: p.saturacion / 100,
+    contraste: p.contraste / 100,
     tintaColor: hexARgb(p.tintaColor),
   };
 }
@@ -734,6 +736,8 @@ const ETIQUETAS = {
   limpieza: (v) => (v > 0 ? `${v} px` : 'apagado'),
   alfaUmbral: (v) => `${Math.round(v / 255 * 100)}%`,
   respiracion: (v) => (v > 0 ? `${v}% · lo sólido queda al ${100 - v}%` : 'apagado'),
+  saturacion: (v) => (v > 0 ? `+${v}%` : 'apagado'),
+  contraste: (v) => (v > 0 ? `+${v}%` : 'apagado'),
 };
 
 function pintarEtiqueta(k) {
@@ -762,6 +766,8 @@ function sincronizarPanel() {
   $('#filaEstilo').hidden = !DE_CELDA.has(S.p.forma);
   $('#filaUmbral').hidden = S.p.alfaModo !== 'umbral';
   $('#filaColor').hidden = S.p.tinta !== 'solida';
+  $('#filaVivos').hidden = S.p.tinta === 'solida';
+  $('#filaContraste').hidden = S.p.tinta === 'solida';
 }
 
 // Los ajustes se recuerdan entre una vez y otra (la imagen no: pesa demasiado)

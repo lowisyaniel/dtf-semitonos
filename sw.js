@@ -3,7 +3,7 @@
 // - Le pone a todo las cabeceras COOP/COEP: sin ellas Chrome no deja usar
 //   varios hilos y la IA en el procesador va mucho más lenta.
 // Los modelos NO pasan por aquí: ia.js los guarda en su propia caché.
-const VERSION = 'dtf-pagina-v1';
+const VERSION = 'dtf-pagina-v2';
 const PAGINA = ['./', 'index.html', 'estilo.css', 'app.js', 'semitono.js', 'png.js', 'ia.js', 'registro.js',
   'manifest.webmanifest', 'icono-192.png', 'icono-512.png',
   'ort/ort.webgpu.bundle.min.mjs', 'ort/ort-wasm-simd-threaded.asyncify.mjs', 'ort/ort-wasm-simd-threaded.asyncify.wasm'];
